@@ -119,12 +119,6 @@
             android:textSize="20dp"
             android:layout_marginTop="20dp"/>
 
-        <Button
-            android:id="@+id/btnNewGame"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/new_game"
-            android:onClick="btnNewGame_Clicked"/>
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

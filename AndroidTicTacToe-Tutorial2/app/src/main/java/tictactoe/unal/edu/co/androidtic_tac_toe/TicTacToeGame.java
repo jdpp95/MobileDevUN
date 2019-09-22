@@ -19,6 +19,23 @@ public class TicTacToeGame implements ITicTacToeGame {
 
     private Random mRand;
 
+    //The computer's difficulty levels
+    public enum DifficultyLevel {
+        Easy,
+        Harder,
+        Expert
+    }
+
+    private DifficultyLevel mDifficultyLevel = DifficultyLevel.Expert;
+
+    public DifficultyLevel getmDifficultyLevel() {
+        return mDifficultyLevel;
+    }
+
+    public void setmDifficultyLevel(DifficultyLevel difficultyLevel){
+        mDifficultyLevel = difficultyLevel;
+    }
+
     public TicTacToeGame() {
 
         // Seed the random number generator
@@ -104,22 +121,27 @@ public class TicTacToeGame implements ITicTacToeGame {
 
     public int getComputerMove()
     {
-        int move;
+        int move = -1;
 
-        // First see if there's a move O can make to win
-        for (int i = 0; i < BOARD_SIZE; i++) {
-            if (mBoard[i] != HUMAN_PLAYER && mBoard[i] != COMPUTER_PLAYER) {
-                char curr = mBoard[i];
-                mBoard[i] = COMPUTER_PLAYER;
-                if (checkForWinner() == 3) {
-                    setMove(COMPUTER_PLAYER, i);
-                    return i;
-                }
-                else
-                    mBoard[i] = curr;
+        if (mDifficultyLevel == DifficultyLevel.Easy) move = getRandomMove();
+        else if(mDifficultyLevel == DifficultyLevel.Harder) {
+            move = getWinningMove();
+            if (move == -1)
+            {
+                move = getRandomMove();
             }
+        } else if(mDifficultyLevel == DifficultyLevel.Expert){
+            move = getWinningMove();
+            if (move == -1)
+                move = getBlockingMove();
+            if (move == -1)
+                move = getRandomMove();
         }
 
+        return move;
+    }
+
+    private int getBlockingMove() {
         // See if there's a move O can make to block X from winning
         for (int i = 0; i < BOARD_SIZE; i++) {
             if (mBoard[i] != HUMAN_PLAYER && mBoard[i] != COMPUTER_PLAYER) {
@@ -134,6 +156,30 @@ public class TicTacToeGame implements ITicTacToeGame {
                     mBoard[i] = curr;
             }
         }
+
+        return -1;
+    }
+
+    private int getWinningMove() {
+        // First see if there's a move O can make to win
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            if (mBoard[i] != HUMAN_PLAYER && mBoard[i] != COMPUTER_PLAYER) {
+                char curr = mBoard[i];
+                mBoard[i] = COMPUTER_PLAYER;
+                if (checkForWinner() == 3) {
+                    setMove(COMPUTER_PLAYER, i);
+                    return i;
+                }
+                else
+                    mBoard[i] = curr;
+            }
+        }
+
+        return -1;
+    }
+
+    private int getRandomMove() {
+        int move = -1;
 
         // Generate random move
         do
