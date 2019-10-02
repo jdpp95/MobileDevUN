@@ -11,7 +11,7 @@ public interface ITicTacToeGame {
      * @param player - The HUMAN_PLAYER or COMPUTER_PLAYER
      * @param location - The location (0-8) to place the move
      */
-    void setMove(char player, int location);
+    boolean setMove(char player, int location);
 
     /** Return the best move for the computer to make. You must call setMove()
      * to actually make the computer move to that location.
@@ -25,4 +25,11 @@ public interface ITicTacToeGame {
      * or 3 if O won.
      */
     int checkForWinner();
+
+    /**
+     * Gets the occupant of a given cell in the board.
+     * @param i - The position of the cell.
+     * @return - Character representing the occupant.
+     */
+    char getBoardOccupant(int i);
 }

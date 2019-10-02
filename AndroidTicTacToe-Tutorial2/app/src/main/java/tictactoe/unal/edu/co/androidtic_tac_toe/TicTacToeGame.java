@@ -101,6 +101,11 @@ public class TicTacToeGame implements ITicTacToeGame {
     }
 
     @Override
+    public char getBoardOccupant(int i) {
+        return mBoard[i];
+    }
+
+    @Override
     public void clearBoard() {
         for(int i = 0; i < BOARD_SIZE; i++)
         {
@@ -109,14 +114,15 @@ public class TicTacToeGame implements ITicTacToeGame {
     }
 
     @Override
-    public void setMove(char player, int location) {
+    public boolean setMove(char player, int location) {
         if(player == HUMAN_PLAYER || player == COMPUTER_PLAYER){
             if(mBoard[location] == FREE_SPOT)
             {
                 mBoard[location] = player;
-            } // TODO: else => Location not available
+                return true;
+            } return false; // TODO: else => Location not available
 
-        } // TODO: else => invalid player
+        } return false; // TODO: else => invalid player
     }
 
     public int getComputerMove()
