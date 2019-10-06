@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Dinner QR</string>
+    <string name="my_bills">My bills</string>
+    <string name="account_settings">Account settings</string>
+    <string name="scan_table">Scan table</string>
+    <string name="error_camera">Cannot use camera!</string>
+</resources>
