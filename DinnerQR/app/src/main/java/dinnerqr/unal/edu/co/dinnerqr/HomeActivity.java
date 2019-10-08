@@ -32,7 +32,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v){
         if(v.getId() == R.id.btnScan){
-            //Intent intent = new Intent(HomeActivity.this, QRScanActivity.class);
+            //Intent intent = new Intent(HomeActivity.this, MenuActivity.class);
             //startActivity(intent);
             mScannerView = new ZXingScannerView(this);
             setContentView(mScannerView);
@@ -57,7 +57,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     public void handleResult(Result rawResult) {
         Log.v("HandleResult", rawResult.getText());
         Toast.makeText(HomeActivity.this, rawResult.getText(), Toast.LENGTH_SHORT).show();
-
         mScannerView.resumeCameraPreview(this);
+        Intent intent = new Intent(this, MenuActivity.class);
+        this.startActivity(intent);
     }
 }

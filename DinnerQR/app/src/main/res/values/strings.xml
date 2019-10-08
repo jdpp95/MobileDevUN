@@ -4,4 +4,6 @@
     <string name="account_settings">Account settings</string>
     <string name="scan_table">Scan table</string>
     <string name="error_camera">Cannot use camera!</string>
+    <string name="see_order">See order</string>
+    <string name="today_menu">Today\'s menu</string>
 </resources>

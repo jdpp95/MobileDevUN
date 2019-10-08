@@ -9,6 +9,11 @@ public class Order {
     private Comment comment;
     private LinkedList<OrderedDish> orderedDishes;
 
+    //TODO: Expand constructor.
+    public Order(){
+        orderedDishes = new LinkedList<OrderedDish>();
+    }
+
     public Client getClient() {
         return client;
     }
@@ -37,7 +42,7 @@ public class Order {
         return orderedDishes;
     }
 
-    public void setOrderedDishes(LinkedList<OrderedDish> orderedDishes) {
-        this.orderedDishes = orderedDishes;
+    public void addOrderedDish(OrderedDish orderedDish) {
+        this.orderedDishes.add(orderedDish);
     }
 }
