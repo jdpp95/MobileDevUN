@@ -7,6 +7,7 @@
     android:padding="16dp">
 
     <TextView
+        android:id="@+id/menuTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/today_menu"
@@ -16,7 +17,7 @@
         />
 
     <LinearLayout
-        android:id="@+id/dish_list"
+        android:id="@+id/dishList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -27,5 +28,31 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/see_order"
+        android:onClick="onClick"
+        />
+
+    <LinearLayout
+        android:id="@+id/orderedDishesList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"/>
+
+    <Button
+        android:id="@+id/backToMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/back"
+        android:visibility="gone"
+        android:onClick="onClick"
+        />
+
+    <Button
+        android:id="@+id/sendOrder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/send_order"
+        android:visibility="gone"
+        android:onClick="onClick"
         />
 </LinearLayout>

@@ -1,5 +1,8 @@
 package dinnerqr.unal.edu.co.dinnerqr;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 public class OrderedDish {
     //Order-dish
     private Order order;
@@ -18,5 +21,9 @@ public class OrderedDish {
 
     public int getQuantity() {
         return this.quantity;
+    }
+
+    public Dish getDish(){
+        return dish;
     }
 }
