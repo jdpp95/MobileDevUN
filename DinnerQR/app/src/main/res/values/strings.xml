@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Dinner QR</string>
+    <string name="my_bills">My bills</string>
+    <string name="account_settings">Account settings</string>
+    <string name="scan_table">Scan table</string>
+    <string name="error_camera">Cannot use camera!</string>
+    <string name="see_order">See order</string>
+    <string name="today_menu">Today\'s menu</string>
+    <string name="order_summary">Order summary</string>
+    <string name="back">Back</string>
+    <string name="send_order">Send order</string>
+    <string name="total">Total</string>
+    <string name="order_in_progress">Your order has been sent, it will arrive in a few minutes :)</string>
+</resources>
