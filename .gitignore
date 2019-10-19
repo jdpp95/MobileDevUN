@@ -1,0 +1,16 @@
+*.iml
+.gradle
+DinnerQR/local.properties
+DinnerQR/.idea/libraries
+DinnerQR/.idea/modules.xml
+DinnerQR/.idea/workspace.xml
+.DS_Store
+DinnerQR/build
+DinnerQR/captures
+.externalNativeBuild
+AndroidTicTacToe-Tutorial2/local.properties
+AndroidTicTacToe-Tutorial2/.idea/libraries
+AndroidTicTacToe-Tutorial2/.idea/modules.xml
+AndroidTicTacToe-Tutorial2/.idea/workspace.xml
+AndroidTicTacToe-Tutorial2/build
+AndroidTicTacToe-Tutorial2/captures
