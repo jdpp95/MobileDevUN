@@ -6,9 +6,26 @@
  */
 package tictactoe.unal.edu.co.androidtic_tac_toe;
 
+import android.util.Log;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 
-public class TicTacToeGame implements ITicTacToeGame {
+import javax.annotation.Nullable;
+
+public class TicTacToeMultiplayer implements ITicTacToeGame {
 
     private char mBoard[] = {'1','2','3','4','5','6','7','8','9'};
     public static final int BOARD_SIZE = 9;
@@ -17,39 +34,14 @@ public class TicTacToeGame implements ITicTacToeGame {
     public static final char COMPUTER_PLAYER = 'O';
     public static final char FREE_SPOT = ' ';
 
-    private Random mRand;
+    private String gameId;
+    private boolean isPlayer1;
 
-    public static String getEmptyBoard() {
-        String board = "";
-        for(int i=0; i < BOARD_SIZE; i++)
-        {
-            board += FREE_SPOT;
-        }
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        return board;
-    }
-
-    //The computer's difficulty levels
-    public enum DifficultyLevel {
-        Easy,
-        Harder,
-        Expert
-    }
-
-    private DifficultyLevel mDifficultyLevel = DifficultyLevel.Expert;
-
-    public DifficultyLevel getmDifficultyLevel() {
-        return mDifficultyLevel;
-    }
-
-    public void setmDifficultyLevel(DifficultyLevel difficultyLevel){
-        mDifficultyLevel = difficultyLevel;
-    }
-
-    public TicTacToeGame() {
-
-        // Seed the random number generator
-        mRand = new Random();
+    public TicTacToeMultiplayer(String gameId, boolean isPlayer1) {
+        this.gameId = gameId;
+        this.isPlayer1 = isPlayer1;
     }
 
     // Check for a winner.  Return
@@ -117,12 +109,22 @@ public class TicTacToeGame implements ITicTacToeGame {
 
     @Override
     public String getBoard() {
-        return null;
+        String board = "";
+
+        for(int i = 0; i < mBoard.length; i++)
+        {
+            board += mBoard[i];
+        }
+
+        return board;
     }
 
     @Override
     public void setBoard(String board) {
-        throw new UnsupportedOperationException();
+        for(int i=0; i < board.length(); i++)
+        {
+            mBoard[i] = board.charAt(i);
+        }
     }
 
     @Override
@@ -149,72 +151,19 @@ public class TicTacToeGame implements ITicTacToeGame {
     {
         int move = -1;
 
-        if (mDifficultyLevel == DifficultyLevel.Easy) move = getRandomMove();
-        else if(mDifficultyLevel == DifficultyLevel.Harder) {
-            move = getWinningMove();
-            if (move == -1)
-            {
-                move = getRandomMove();
-            }
-        } else if(mDifficultyLevel == DifficultyLevel.Expert){
-            move = getWinningMove();
-            if (move == -1)
-                move = getBlockingMove();
-            if (move == -1)
-                move = getRandomMove();
-        }
+        //TODO: Implement this.
 
         return move;
     }
 
-    private int getBlockingMove() {
-        // See if there's a move O can make to block X from winning
-        for (int i = 0; i < BOARD_SIZE; i++) {
-            if (mBoard[i] != HUMAN_PLAYER && mBoard[i] != COMPUTER_PLAYER) {
-                char curr = mBoard[i];   // Save the current number
-                mBoard[i] = HUMAN_PLAYER;
-                if (checkForWinner() == 2) {
-                    mBoard[i] = COMPUTER_PLAYER;
-                    setMove(COMPUTER_PLAYER, i);
-                    return i;
-                }
-                else
-                    mBoard[i] = curr;
-            }
-        }
-
-        return -1;
-    }
-
-    private int getWinningMove() {
-        // First see if there's a move O can make to win
-        for (int i = 0; i < BOARD_SIZE; i++) {
-            if (mBoard[i] != HUMAN_PLAYER && mBoard[i] != COMPUTER_PLAYER) {
-                char curr = mBoard[i];
-                mBoard[i] = COMPUTER_PLAYER;
-                if (checkForWinner() == 3) {
-                    setMove(COMPUTER_PLAYER, i);
-                    return i;
-                }
-                else
-                    mBoard[i] = curr;
-            }
-        }
-
-        return -1;
-    }
-
-    private int getRandomMove() {
-        int move = -1;
-
-        // Generate random move
-        do
+    public HashMap<String, String> getMapBoard()
+    {
+        HashMap<String, String> map = new HashMap<>();
+        for(int i=0; i < BOARD_SIZE; i++)
         {
-            move = mRand.nextInt(BOARD_SIZE);
-        } while (mBoard[move] == HUMAN_PLAYER || mBoard[move] == COMPUTER_PLAYER);
+            map.put(String.valueOf(i+1), String.valueOf(mBoard[i]));
+        }
 
-        setMove(COMPUTER_PLAYER, move);
-        mBoard[move] = COMPUTER_PLAYER;
-        return move;
+        return map;
     }
 }

@@ -13,6 +13,9 @@
         android:title="@string/quit"
         android:icon="@drawable/quit_game" />
     <item
+        android:id="@+id/returnToMain"
+        android:title="@string/return_to_main_menu" />
+    <item
         android:id="@+id/about"
         android:title="@string/about" />
 </menu>

@@ -4,25 +4,40 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Color;
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.SetOptions;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 public class AndroidTicTacToeActivity extends AppCompatActivity {
 
     // Represents the internal state of the game.
-    private TicTacToeGame mGame;
+    private ITicTacToeGame mGame;
 
     //Various text displayed.
     private TextView mInfoTextView;
@@ -44,6 +59,18 @@ public class AndroidTicTacToeActivity extends AppCompatActivity {
 
     private char mPlayerInTurn;
 
+    private boolean mMultiplayer;
+
+    private boolean mPlayer1;
+
+    private String mGameId;
+    private String mPlayer1Id;
+    private String mPlayer1Name;
+    private String mPlayer2Id;
+    private String mPlayer2Name;
+
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+
     private View.OnTouchListener mTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -53,7 +80,8 @@ public class AndroidTicTacToeActivity extends AppCompatActivity {
             int pos = row * 3 + col;
 
             if(!mGameOver && mPlayerInTurn == TicTacToeGame.HUMAN_PLAYER){
-                if(!setMove(TicTacToeGame.HUMAN_PLAYER, pos))
+                char player = mPlayer1 || !mMultiplayer? TicTacToeGame.HUMAN_PLAYER : TicTacToeGame.COMPUTER_PLAYER;
+                if(!setMove(player, pos))
                 {
                     return false;
                 }
@@ -64,15 +92,20 @@ public class AndroidTicTacToeActivity extends AppCompatActivity {
                 if (winner == 0){
                     Handler handler = new Handler();
                     mPlayerInTurn = TicTacToeGame.COMPUTER_PLAYER;
-                    mInfoTextView.setText(R.string.turn_computer);
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            int winner = getComputerMove();
-                            updateWinnerStatus(winner);
-                            mPlayerInTurn = TicTacToeGame.HUMAN_PLAYER;
-                        }
-                    }, 1000);
+                    mInfoTextView.setText(getString(R.string.turn_computer));
+                    if(mMultiplayer){
+                        //Send board to db
+                        sendBoardToDB();
+                    } else {
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                int winner = getComputerMove();
+                                updateWinnerStatus(winner);
+                                mPlayerInTurn = TicTacToeGame.HUMAN_PLAYER;
+                            }
+                        }, 1000);
+                    }
                 } else {
                     updateWinnerStatus(winner);
                 }
@@ -83,8 +116,38 @@ public class AndroidTicTacToeActivity extends AppCompatActivity {
         }
     };
 
+    private void sendBoardToDB() {
+        if(!mMultiplayer) return;
+        String board = mGame.getBoard();
+        HashMap<String, String> gameUpdated = new HashMap<>();
+        gameUpdated.put("board", board);
+        gameUpdated.put("player_in_turn", getTurn());
+        gameUpdated.put("winner_status", String.valueOf(mGame.checkForWinner()));
+        db.collection("games").document(mGameId).set(gameUpdated, SetOptions.merge()).addOnSuccessListener(
+                new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        mBoardView.invalidate();
+                    }
+                }
+        );//Handle
+    }
+
     private void updateWinnerStatus(int winner) {
         mGameOver = winner > 0;
+
+        if(mGameOver){
+            sendBoardToDB();
+        }
+
+        if(mMultiplayer && !mPlayer1)
+        {
+            if(winner == 2){
+                winner = 3;
+            } else if (winner == 3) {
+                winner = 2;
+            }
+        }
 
         switch (winner){
             case 0:
@@ -116,7 +179,19 @@ public class AndroidTicTacToeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mGame = new TicTacToeGame();
+
+        Intent intent = getIntent();
+        mMultiplayer = intent.getBooleanExtra("multiplayer", false);
+        mPlayer1 = intent.getBooleanExtra("player_1", true);
+        mGameId = intent.getStringExtra("game_id");
+
+        if(mMultiplayer)
+        {
+            mGame = new TicTacToeMultiplayer(mGameId, mPlayer1);
+        } else {
+            mGame = new TicTacToeGame();
+        }
+
         mBoardView = findViewById(R.id.board);
         mBoardView.setGame(mGame);
         mBoardView.setOnTouchListener(mTouchListener);
@@ -128,9 +203,34 @@ public class AndroidTicTacToeActivity extends AppCompatActivity {
         humanMovesFirst = false;
         mPlayerInTurn = TicTacToeGame.HUMAN_PLAYER;
 
-        startNewGame();
+        if(!mMultiplayer)
+            mPlayer2Name = "Android";
+        else
+            mPlayer2Name = "Opponent";
 
-//        mInfoTextView = findViewById(R.id.);
+        if(mMultiplayer) {
+            db.collection("games").document(mGameId).addSnapshotListener(
+                    new EventListener<DocumentSnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                            if (e != null || documentSnapshot == null) {
+                                Log.w("Fail", "Listen failed.", e);
+                                return;
+                            }
+
+                            String board = documentSnapshot.get("board").toString();
+                            String winner = documentSnapshot.get("winner_status").toString();
+
+                            mGame.setBoard(board);
+                            readTurn();
+                            updateWinnerStatus(Integer.parseInt(winner));
+                            mBoardView.invalidate();
+                        }
+                    }
+            );
+        }
+
+        startNewGame();
     }
 
     @Override
@@ -152,17 +252,92 @@ public class AndroidTicTacToeActivity extends AppCompatActivity {
     private void startNewGame()
     {
         mGame.clearBoard();
-        mBoardView.invalidate();
+
+        if(mMultiplayer)
+        {
+            sendBoardToDB();
+        } else
+            mBoardView.invalidate();
 
         mGameOver = false;
-        humanMovesFirst = !humanMovesFirst;
+        if(mPlayer1)
+            humanMovesFirst = !humanMovesFirst;
 
-        if(!humanMovesFirst){
-            getComputerMove();
-            mInfoTextView.setText(R.string.turn_human);
-        } else {
-            mInfoTextView.setText(R.string.first_human);
+        if(mMultiplayer)
+        {
+            this.readTurn();
+        } else
+        {
+            if (!humanMovesFirst) {
+                getComputerMove();
+                mInfoTextView.setText(R.string.turn_human);
+            } else {
+                mInfoTextView.setText(R.string.first_human);
+            }
         }
+    }
+
+    private void readTurn() {
+        mPlayerInTurn = TicTacToeGame.FREE_SPOT;
+        db.collection("games").document(mGameId).get().addOnSuccessListener(
+                new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        Map data = documentSnapshot.getData();
+                        String turn = null;
+                        if(data != null) {
+                            turn = (String) data.get("player_in_turn");
+                        }
+
+                        if(turn == null){
+                            Log.w("Warning","Player turn not received from db");
+                        } else if(turn.equals("1")) {
+                            if(mPlayer1) mPlayerInTurn = TicTacToeGame.HUMAN_PLAYER;
+                            else mPlayerInTurn = TicTacToeGame.COMPUTER_PLAYER;
+                        } else if (turn.equals("2")) {
+                            if(mPlayer1) mPlayerInTurn = TicTacToeGame.COMPUTER_PLAYER;
+                            else mPlayerInTurn = TicTacToeGame.HUMAN_PLAYER;
+                        }
+
+                        if(!mGameOver) {
+                            if (mPlayerInTurn == TicTacToeGame.HUMAN_PLAYER) {
+                                mInfoTextView.setText(R.string.turn_human);
+                            } else if (mPlayerInTurn == TicTacToeGame.COMPUTER_PLAYER) {
+                                mInfoTextView.setText(R.string.turn_computer);
+                            } else {
+                                mInfoTextView.setText("...");
+                            }
+                        }
+                    }
+                }
+        ).addOnFailureListener(
+                new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("Error", "Cannot retrieve turn from db");
+                    }
+                }
+        );
+    }
+
+    private String getTurn() {
+
+        String player = "";
+
+        //HashMap game = new HashMap<String, Object>();
+        if(mPlayer1) {
+            if (mPlayerInTurn == TicTacToeGame.HUMAN_PLAYER)
+                player = "1";
+            else
+                player = "2";
+        } else {
+            if (mPlayerInTurn == TicTacToeGame.COMPUTER_PLAYER)
+                player = "1";
+            else
+                player = "2";
+        }
+
+        return player;
     }
 
     private boolean setMove(char player, int location){
@@ -181,7 +356,10 @@ public class AndroidTicTacToeActivity extends AppCompatActivity {
     private int getComputerMove() {
         int winner;
         int move = mGame.getComputerMove();
-        setMove(TicTacToeGame.COMPUTER_PLAYER, move);
+
+        if(move >= 0)
+            setMove(TicTacToeGame.COMPUTER_PLAYER, move);
+
         winner = mGame.checkForWinner();
         return winner;
     }
@@ -210,6 +388,9 @@ public class AndroidTicTacToeActivity extends AppCompatActivity {
             case R.id.about:
                 showDialog(DIALOG_ABOUT_ID);
                 return true;
+            case R.id.returnToMain:
+                Intent intent = new Intent(this, Menu.class);
+                startActivity(intent);
         }
 
         return false;
@@ -237,20 +418,22 @@ public class AndroidTicTacToeActivity extends AppCompatActivity {
                             public void onClick(DialogInterface dialog, int item) {
                                 dialog.dismiss();   // Close dialog
 
-                                switch (item){
-                                    case 0:
-                                        mGame.setmDifficultyLevel(TicTacToeGame.DifficultyLevel.Easy);
-                                        break;
-                                    case 1:
-                                        mGame.setmDifficultyLevel(TicTacToeGame.DifficultyLevel.Harder);
-                                        break;
-                                    case 2:
-                                        mGame.setmDifficultyLevel(TicTacToeGame.DifficultyLevel.Expert);
-                                        break;
+                                if(mGame.getClass() == TicTacToeGame.class) {
+                                    switch (item) {
+                                        case 0:
+                                            ((TicTacToeGame)mGame).setmDifficultyLevel(TicTacToeGame.DifficultyLevel.Easy);
+                                            break;
+                                        case 1:
+                                            ((TicTacToeGame)mGame).setmDifficultyLevel(TicTacToeGame.DifficultyLevel.Harder);
+                                            break;
+                                        case 2:
+                                            ((TicTacToeGame)mGame).setmDifficultyLevel(TicTacToeGame.DifficultyLevel.Expert);
+                                            break;
+                                    }
+                                    // Display the selected difficulty level
+                                    Toast.makeText(getApplicationContext(), levels[item],
+                                            Toast.LENGTH_SHORT).show();
                                 }
-                                // Display the selected difficulty level
-                                Toast.makeText(getApplicationContext(), levels[item],
-                                        Toast.LENGTH_SHORT).show();
                             }
                         });
                 dialog = builder.create();

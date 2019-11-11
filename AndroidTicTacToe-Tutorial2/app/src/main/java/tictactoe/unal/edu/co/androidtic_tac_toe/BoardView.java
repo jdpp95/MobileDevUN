@@ -18,7 +18,7 @@ public class BoardView extends View {
     private Bitmap mHumanBitmap;
     private Bitmap mComputerBitMap;
     private Paint mPaint;
-    private TicTacToeGame mGame;
+    private ITicTacToeGame mGame;
 
     public void initialize(){
         mComputerBitMap = BitmapFactory.decodeResource(getResources(), R.drawable.x);
@@ -91,7 +91,7 @@ public class BoardView extends View {
         }
     }
 
-    public void setGame(TicTacToeGame game){
+    public void setGame(ITicTacToeGame game){
         mGame = game;
     }
 

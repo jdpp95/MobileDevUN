@@ -9,13 +9,22 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".AndroidTicTacToeActivity">
+        <activity android:name=".NamePromptActivity"></activity>
+        <activity android:name=".WaitingSecondPlayer" />
+        <activity
+            android:name=".RoomActivity"
+            android:label="@string/title_activity_room"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".NewMultiGameActivity" />
+        <activity android:name=".MultiplayerActivity" />
+        <activity android:name=".MenuActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".AndroidTicTacToeActivity" />
     </application>
 
 </manifest>

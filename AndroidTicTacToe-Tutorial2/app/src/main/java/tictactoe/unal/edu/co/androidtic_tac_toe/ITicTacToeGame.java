@@ -32,4 +32,8 @@ public interface ITicTacToeGame {
      * @return - Character representing the occupant.
      */
     char getBoardOccupant(int i);
+
+    String getBoard();
+
+    void setBoard(String board);
 }
