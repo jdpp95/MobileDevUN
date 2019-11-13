@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">DevCompanyFinder</string>
+    <string name="add_company_name">Company\'s name</string>
+    <string name="add_website">Company\'s website</string>
+    <string name="category">Select company\'s category</string>
+    <string name="choose_menu">Choose a menu option</string>
+    <string name="string_consulting">Consulting</string>
+    <string name="string_custom_dev">Custom development</string>
+    <string name="string_software_factory">Software factory</string>
+    <string name="add_phone_number">Phone number</string>
+    <string name="enter_email">Email</string>
+    <string name="add_products_services">Enter products and services offered by the company</string>
+    <string name="add_company">Add company</string>
+    <string name="update_company">Update company</string>
+    <string name="menuItem1">Settings</string>
+    <string name="remove_company">Remove company</string>
+    <string name="view_all_companies">View all companies</string>
+    <string name="company_id">Company id</string>
+</resources>
